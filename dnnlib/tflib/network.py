@@ -149,17 +149,26 @@ class Network:
 
         # Build template graph.
         with tfutil.absolute_variable_scope(self.scope, reuse=False), tfutil.absolute_name_scope(self.scope):  # ignore surrounding scopes
+            print("net1")
             #assert tf.get_variable_scope().name == self.scope #2025
             assert tf.compat.v1.get_variable_scope().name == self.scope
+            print("net2")
             
             #assert tf.get_default_graph().get_name_scope() == self.scope
+            print("net3")
             assert tf.compat.v1.get_default_graph().get_name_scope() == self.scope
+            print("net322")
             with tf.control_dependencies(None):  # ignore surrounding control dependencies
+                print("net4")
                 self.input_templates = [tf.placeholder(tf.float32, name=name) for name in self.input_names]
+                print("net5")
                 out_expr = self._build_func(*self.input_templates, **build_kwargs)
+                print("net6")
 
         # Collect outputs.
+        print("net7")
         assert tfutil.is_tf_expression(out_expr) or isinstance(out_expr, tuple)
+        print("net8")
         self.output_templates = [out_expr] if tfutil.is_tf_expression(out_expr) else list(out_expr)
         self.num_outputs = len(self.output_templates)
         assert self.num_outputs >= 1
