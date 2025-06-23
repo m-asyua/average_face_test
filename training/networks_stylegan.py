@@ -7,7 +7,10 @@
 """Network architectures used in the StyleGAN paper."""
 
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf   #2025
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
 import dnnlib
 import dnnlib.tflib as tflib
 
