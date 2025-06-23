@@ -441,6 +441,7 @@ def G_synthesis_stylegan2(
     fused_modconv       = True,         # Implement modulated_conv2d_layer() as a single fused op?
     **_kwargs):                         # Ignore unrecognized keyword args.
 
+    print("G_synthesis_ t1")    
     resolution_log2 = int(np.log2(resolution))
     assert resolution == 2**resolution_log2 and resolution >= 4
     def nf(stage): return np.clip(int(fmap_base / (2.0 ** (stage * fmap_decay))), fmap_min, fmap_max)
@@ -453,16 +454,19 @@ def G_synthesis_stylegan2(
     dlatents_in.set_shape([None, num_layers, dlatent_size])
     dlatents_in = tf.cast(dlatents_in, dtype)
 
+    print("G_synthesis_ t2")    
     # Noise inputs.
     noise_inputs = []
     for layer_idx in range(num_layers - 1):
         res = (layer_idx + 5) // 2
         shape = [1, 1, 2**res, 2**res]
         # 2025 noise_inputs.append(tf.get_variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
+        print("G_synthesis_ t21")   
         noise_inputs.append(tf.compat.v1.get_variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
-
+        print("G_synthesis_ t22")   
 
         
+    print("G_synthesis_ t3")    
     # Single convolution layer with all the bells and whistles.
     def layer(x, layer_idx, fmaps, kernel, up=False):
         x = modulated_conv2d_layer(x, dlatents_in[:, layer_idx], fmaps=fmaps, kernel=kernel, up=up, resample_kernel=resample_kernel, fused_modconv=fused_modconv)
@@ -471,7 +475,9 @@ def G_synthesis_stylegan2(
         else:
             noise = tf.cast(noise_inputs[layer_idx], x.dtype)
         #2025   noise_strength = tf.get_variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+        print("G_synthesis_ t4")    
         noise_strength = tf.compat.v1.get_variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+        print("G_synthesis_ t5")    
 
         
         x += noise * tf.cast(noise_strength, x.dtype)
