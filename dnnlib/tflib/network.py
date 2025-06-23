@@ -162,6 +162,9 @@ class Network:
                 #          self.input_templates = [tf.placeholder(tf.float32, name=name) for name in self.input_names]
                 self.input_templates = [tf.compat.v1.placeholder(tf.float32, name=name) for name in self.input_names]
                 print("net5")
+                print(self)
+                print(self.input_templates)
+                print(build_kwargs)
                 out_expr = self._build_func(*self.input_templates, **build_kwargs)
                 print("net6")
 
