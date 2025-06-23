@@ -155,12 +155,12 @@ class Network:
             print("net2")
             
             #assert tf.get_default_graph().get_name_scope() == self.scope
-            print("net3")
             assert tf.compat.v1.get_default_graph().get_name_scope() == self.scope
             print("net322")
             with tf.control_dependencies(None):  # ignore surrounding control dependencies
                 print("net4")
-                self.input_templates = [tf.placeholder(tf.float32, name=name) for name in self.input_names]
+                #          self.input_templates = [tf.placeholder(tf.float32, name=name) for name in self.input_names]
+                self.input_templates = [tf.compat.v1.placeholder(tf.float32, name=name) for name in self.input_names]
                 print("net5")
                 out_expr = self._build_func(*self.input_templates, **build_kwargs)
                 print("net6")
