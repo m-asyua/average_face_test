@@ -214,7 +214,10 @@ class Network:
 
         # Build TensorFlow graph to evaluate the network.
         with tfutil.absolute_variable_scope(self.scope, reuse=True), tf.name_scope(self.name):
-            assert tf.get_variable_scope().name == self.scope
+            # assert tf.get_variable_scope().name == self.scope #2025
+            assert tf.compat.v1.get_variable_scope().name == self.scope
+
+            
             valid_inputs = [expr for expr in in_expr if expr is not None]
             final_inputs = []
             for expr, name, shape in zip(in_expr, self.input_names, self.input_shapes):
