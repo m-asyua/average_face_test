@@ -34,7 +34,8 @@ def get_weight(shape, gain=1, use_wscale=True, lrmul=1, weight_var='weight'):
 
     # Create variable.
     init = tf.initializers.random_normal(0, init_std)
-    return tf.get_variable(weight_var, shape=shape, initializer=init) * runtime_coef
+    #return tf.get_variable(weight_var, shape=shape, initializer=init) * runtime_coef  #2025
+    return tf.Variable(weight_var, shape=shape, initializer=init) * runtime_coef
 
 #----------------------------------------------------------------------------
 # Fully-connected layer.
@@ -65,7 +66,8 @@ def conv2d_layer(x, fmaps, kernel, up=False, down=False, resample_kernel=None, g
 # Apply bias and activation func.
 
 def apply_bias_act(x, act='linear', alpha=None, gain=None, lrmul=1, bias_var='bias'):
-    b = tf.get_variable(bias_var, shape=[x.shape[1]], initializer=tf.initializers.zeros()) * lrmul
+    #b = tf.get_variable(bias_var, shape=[x.shape[1]], initializer=tf.initializers.zeros()) * lrmul  #2025
+    b = tf.Variable(bias_var, shape=[x.shape[1]], initializer=tf.initializers.zeros()) * lrmul
     return fused_bias_act(x, b=tf.cast(b, x.dtype), act=act, alpha=alpha, gain=gain)
 
 #----------------------------------------------------------------------------
@@ -191,8 +193,10 @@ def G_main(
         components.mapping = tflib.Network('G_mapping', func_name=globals()[mapping_func], dlatent_broadcast=num_layers, **kwargs)
 
     # Setup variables.
-    lod_in = tf.get_variable('lod', initializer=np.float32(0), trainable=False)
-    dlatent_avg = tf.get_variable('dlatent_avg', shape=[dlatent_size], initializer=tf.initializers.zeros(), trainable=False)
+    #lod_in = tf.get_variable('lod', initializer=np.float32(0), trainable=False) #2025
+    lod_in = tf.Variable('lod', initializer=np.float32(0), trainable=False)
+    #dlatent_avg = tf.get_variable('dlatent_avg', shape=[dlatent_size], initializer=tf.initializers.zeros(), trainable=False) #2025
+    dlatent_avg = tf.Variable('dlatent_avg', shape=[dlatent_size], initializer=tf.initializers.zeros(), trainable=False)
 
     # Evaluate mapping network.
     dlatents = components.mapping.get_output_for(latents_in, labels_in, is_training=is_training, **kwargs)
@@ -276,7 +280,8 @@ def G_mapping(
     # Embed labels and concatenate them with latents.
     if label_size:
         with tf.variable_scope('LabelConcat'):
-            w = tf.get_variable('weight', shape=[label_size, latent_size], initializer=tf.initializers.random_normal())
+            #w = tf.get_variable('weight', shape=[label_size, latent_size], initializer=tf.initializers.random_normal()) #2025
+            w = tf.Variable('weight', shape=[label_size, latent_size], initializer=tf.initializers.random_normal())
             y = tf.matmul(labels_in, tf.cast(w, dtype))
             x = tf.concat([x, y], axis=1)
 
@@ -337,14 +342,16 @@ def G_synthesis_stylegan_revised(
     # Primary inputs.
     dlatents_in.set_shape([None, num_layers, dlatent_size])
     dlatents_in = tf.cast(dlatents_in, dtype)
-    lod_in = tf.cast(tf.get_variable('lod', initializer=np.float32(0), trainable=False), dtype)
+    #lod_in = tf.cast(tf.get_variable('lod', initializer=np.float32(0), trainable=False), dtype) #2025
+    lod_in = tf.cast(tf.Variable('lod', initializer=np.float32(0), trainable=False), dtype)
 
     # Noise inputs.
     noise_inputs = []
     for layer_idx in range(num_layers - 1):
         res = (layer_idx + 5) // 2
         shape = [1, 1, 2**res, 2**res]
-        noise_inputs.append(tf.get_variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
+        #noise_inputs.append(tf.get_variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
+        noise_inputs.append(tf.Variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
 
     # Single convolution layer with all the bells and whistles.
     def layer(x, layer_idx, fmaps, kernel, up=False):
@@ -353,14 +360,16 @@ def G_synthesis_stylegan_revised(
             noise = tf.random_normal([tf.shape(x)[0], 1, x.shape[2], x.shape[3]], dtype=x.dtype)
         else:
             noise = tf.cast(noise_inputs[layer_idx], x.dtype)
-        noise_strength = tf.get_variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+        #2025   noise_strength = tf.get_variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+        noise_strength = tf.Variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
         x += noise * tf.cast(noise_strength, x.dtype)
         return apply_bias_act(x, act=act)
 
     # Early layers.
     with tf.variable_scope('4x4'):
         with tf.variable_scope('Const'):
-            x = tf.get_variable('const', shape=[1, nf(1), 4, 4], initializer=tf.initializers.random_normal())
+            #2025     x = tf.get_variable('const', shape=[1, nf(1), 4, 4], initializer=tf.initializers.random_normal())
+            x = tf.Variable('const', shape=[1, nf(1), 4, 4], initializer=tf.initializers.random_normal())
             x = tf.tile(tf.cast(x, dtype), [tf.shape(dlatents_in)[0], 1, 1, 1])
         with tf.variable_scope('Conv'):
             x = layer(x, layer_idx=0, fmaps=nf(1), kernel=3)
@@ -449,8 +458,11 @@ def G_synthesis_stylegan2(
     for layer_idx in range(num_layers - 1):
         res = (layer_idx + 5) // 2
         shape = [1, 1, 2**res, 2**res]
-        noise_inputs.append(tf.get_variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
+        # 2025 noise_inputs.append(tf.get_variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
+        noise_inputs.append(tf.Variable('noise%d' % layer_idx, shape=shape, initializer=tf.initializers.random_normal(), trainable=False))
 
+
+        
     # Single convolution layer with all the bells and whistles.
     def layer(x, layer_idx, fmaps, kernel, up=False):
         x = modulated_conv2d_layer(x, dlatents_in[:, layer_idx], fmaps=fmaps, kernel=kernel, up=up, resample_kernel=resample_kernel, fused_modconv=fused_modconv)
@@ -458,7 +470,10 @@ def G_synthesis_stylegan2(
             noise = tf.random_normal([tf.shape(x)[0], 1, x.shape[2], x.shape[3]], dtype=x.dtype)
         else:
             noise = tf.cast(noise_inputs[layer_idx], x.dtype)
-        noise_strength = tf.get_variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+        #2025   noise_strength = tf.get_variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+        noise_strength = tf.Variable('noise_strength', shape=[], initializer=tf.initializers.zeros())
+
+        
         x += noise * tf.cast(noise_strength, x.dtype)
         return apply_bias_act(x, act=act)
 
@@ -486,7 +501,8 @@ def G_synthesis_stylegan2(
     y = None
     with tf.variable_scope('4x4'):
         with tf.variable_scope('Const'):
-            x = tf.get_variable('const', shape=[1, nf(1), 4, 4], initializer=tf.initializers.random_normal())
+            #2025   x = tf.get_variable('const', shape=[1, nf(1), 4, 4], initializer=tf.initializers.random_normal())
+            x = tf.Variable('const', shape=[1, nf(1), 4, 4], initializer=tf.initializers.random_normal())
             x = tf.tile(tf.cast(x, dtype), [tf.shape(dlatents_in)[0], 1, 1, 1])
         with tf.variable_scope('Conv'):
             x = layer(x, layer_idx=0, fmaps=nf(1), kernel=3)
@@ -539,7 +555,8 @@ def D_stylegan(
     labels_in.set_shape([None, label_size])
     images_in = tf.cast(images_in, dtype)
     labels_in = tf.cast(labels_in, dtype)
-    lod_in = tf.cast(tf.get_variable('lod', initializer=np.float32(0.0), trainable=False), dtype)
+    #2025  lod_in = tf.cast(tf.get_variable('lod', initializer=np.float32(0.0), trainable=False), dtype)
+    lod_in = tf.cast(tf.Variable('lod', initializer=np.float32(0.0), trainable=False), dtype)
 
     # Building blocks for spatial layers.
     def fromrgb(x, res): # res = 2..resolution_log2
