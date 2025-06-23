@@ -7,7 +7,9 @@
 """Helper wrapper for a Tensorflow optimizer."""
 
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf # 2025
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 from collections import OrderedDict
 from typing import List, Union
