@@ -67,12 +67,17 @@ def load_networks(path_or_gdrive_path):
         return _cached_networks[path_or_url]
 
     if dnnlib.util.is_url(path_or_url):
+        print("n1")
         stream = dnnlib.util.open_url(path_or_url, cache_dir='.stylegan2-cache')
     else:
+        print("n2")
         stream = open(path_or_url, 'rb')
 
+    print("n3")
     tflib.init_tf()
+    print("n4")
     with stream:
+        print("n5")
         G, D, Gs = pickle.load(stream, encoding='latin1')
     _cached_networks[path_or_url] = G, D, Gs
     return G, D, Gs
