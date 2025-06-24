@@ -86,8 +86,13 @@ class Network:
         # Locate the user-specified network build function.
         if util.is_top_level_function(func_name):
             func_name = util.get_top_level_function_name(func_name)
+        print("bd1")
         module, self._build_func_name = util.get_module_from_obj_name(func_name)
+        print("bd2")
+        print(module)
+        print(self._build_func_name)
         self._build_func = util.get_obj_from_module(module, self._build_func_name)
+        print("bd3")
         assert callable(self._build_func)
 
         # Dig up source code for the module containing the build function.
@@ -310,7 +315,12 @@ class Network:
         exec(self._build_module_src, module.__dict__) # pylint: disable=exec-used
 
         # Locate network build function in the temporary module.
+        print("bd  s1")
+        print(module)
+        print(self._build_func_name)
+        print("bd  s11")
         self._build_func = util.get_obj_from_module(module, self._build_func_name)
+        print("bd  s2")
         assert callable(self._build_func)
 
         # Init TensorFlow graph.
