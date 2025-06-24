@@ -164,8 +164,10 @@ class Network:
             print("net322")
             with tf.control_dependencies(None):  # ignore surrounding control dependencies
                 print("net4")
+                print(tf.float32)
+                print(tf.compat.v1.float32)
                 #          self.input_templates = [tf.placeholder(tf.float32, name=name) for name in self.input_names]
-                self.input_templates = [tf.compat.v1.placeholder(tf.float32, name=name) for name in self.input_names]
+                self.input_templates = [tf.compat.v1.placeholder(tf.compat.v1.float32, name=name) for name in self.input_names]
                 print("net5")
                 print(self)
                 print(self.input_templates)
