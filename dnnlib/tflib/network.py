@@ -234,6 +234,7 @@ class Network:
         # Build TensorFlow graph to evaluate the network.
         with tfutil.absolute_variable_scope(self.scope, reuse=True), tf.name_scope(self.name):
             # assert tf.get_variable_scope().name == self.scope #2025
+            print("network.py 237")
             assert tf.compat.v1.get_variable_scope().name == self.scope
 
             
