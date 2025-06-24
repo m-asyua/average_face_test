@@ -162,7 +162,7 @@ class Network:
             #assert tf.get_default_graph().get_name_scope() == self.scope
             assert tf.compat.v1.get_default_graph().get_name_scope() == self.scope
             print("net322")
-            with tf.control_dependencies(None):  # ignore surrounding control dependencies
+            with tf.compat.v1.control_dependencies(None):  # ignore surrounding control dependencies
                 print("net4")
                 print(tf.float32)
                 print(tf.compat.v1.float32)
